@@ -4,9 +4,24 @@ require "mini_magick"
 module Jekyll
   module Resize
     CACHE_DIR = "cache/resize/"
-    HASH_LENGTH = 32
 
-    HASH_CACHE = {}
+    # Liquid tag entry-point.
+    #
+    # param source: e.g. "my-image.jpg"
+    # param options: e.g. "800x800>"
+    #
+    # return dest_path_rel: Relative path for output file.
+    def resize(source, options)
+      raise "`source` must be a string - got: #{source.class}" unless source.is_a? String
+      raise "`source` may not be empty" unless source.length > 0
+      raise "`options` must be a string - got: #{options.class}" unless options.is_a? String
+      raise "`options` may not be empty" unless options.length > 0
+
+      site = @context.registers[:site]
+      resize_impl(site, source, options)
+    end
+
+    module_function
 
     # Generate output image filename.
     def _dest_filename(src_path, options)
@@ -48,21 +63,8 @@ module Jekyll
       image.write dest_path
     end
 
-    # Liquid tag entry-point.
-    #
-    # param source: e.g. "my-image.jpg"
-    # param options: e.g. "800x800>"
-    #
-    # return dest_path_rel: Relative path for output file.
-    def resize(source, options)
-      raise "`source` must be a string - got: #{source.class}" unless source.is_a? String
-      raise "`source` may not be empty" unless source.length > 0
-      raise "`options` must be a string - got: #{options.class}" unless options.is_a? String
-      raise "`options` may not be empty" unless options.length > 0
-
-      site = @context.registers[:site]
-
-      src_path, dest_path, dest_dir, dest_filename, dest_path_rel = _paths(site.source, source, options)
+    def resize_impl(site, source, options)
+      src_path, dest_path, dest_dir, dest_filename, dest_path_rel, dest_dir_rel = _paths(site.source, source, options)
 
       FileUtils.mkdir_p(dest_dir)
 
