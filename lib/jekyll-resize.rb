@@ -6,14 +6,14 @@ module Jekyll
     CACHE_DIR = "cache/resize/"
     HASH_LENGTH = 32
 
+    HASH_CACHE = {}
+
     # Generate output image filename.
-    def _dest_filename(src_path, options, dest_dir)
-      hash = Digest::SHA256.file(src_path)
-      short_hash = hash.hexdigest()[0, HASH_LENGTH]
+    def _dest_filename(src_path, options)
       options_slug = options.gsub(/[^\da-z]+/i, "")
       ext = File.extname(src_path)
-
-      "#{short_hash}_#{options_slug}#{ext}"
+      basename = File.basename(src_path, ext)
+      "#{basename}_#{options_slug}#{ext}"
     end
 
     # Build the path strings.
@@ -21,9 +21,9 @@ module Jekyll
       src_path = File.join(repo_base, img_path)
       raise "Image at #{src_path} is not readable" unless File.readable?(src_path)
 
-      dest_dir = File.join(repo_base, CACHE_DIR)
+      dest_dir = File.join(repo_base, CACHE_DIR, File.dirname(img_path))
 
-      dest_filename = _dest_filename(src_path, options, dest_dir)
+      dest_filename = _dest_filename(src_path, options)
 
       dest_path = File.join(dest_dir, dest_filename)
       dest_path_rel = File.join(CACHE_DIR, dest_filename)
