@@ -21,14 +21,15 @@ module Jekyll
       src_path = File.join(repo_base, img_path)
       raise "Image at #{src_path} is not readable" unless File.readable?(src_path)
 
-      dest_dir = File.join(repo_base, CACHE_DIR, File.dirname(img_path))
+      dest_dir_rel = File.join(CACHE_DIR, File.dirname(img_path))
+      dest_dir = File.join(repo_base, dest_dir_rel)
 
       dest_filename = _dest_filename(src_path, options)
 
       dest_path = File.join(dest_dir, dest_filename)
-      dest_path_rel = File.join(CACHE_DIR, dest_filename)
+      dest_path_rel = File.join(dest_dir_rel, dest_filename)
 
-      return src_path, dest_path, dest_dir, dest_filename, dest_path_rel
+      return src_path, dest_path, dest_dir, dest_filename, dest_path_rel, dest_dir_rel
     end
 
     # Determine whether the image needs to be written.
@@ -70,7 +71,8 @@ module Jekyll
 
         _process_img(src_path, options, dest_path)
 
-        site.static_files << Jekyll::StaticFile.new(site, site.source, CACHE_DIR, dest_filename)
+        site.static_files << Jekyll::StaticFile.new(site, site.source, dest_dir_rel, dest_filename)
+
       end
 
       File.join(site.baseurl, dest_path_rel)
